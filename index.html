@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="de"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Der Pizzeria-Tresor</title>
+<style>
+:root{--bg:#070b10;--pan:#0f1620;--line:#1f3347;--g:#39ff88;--a:#ffc857;--r:#ff5470;--t:#e6eef7;--m:#8da2b8;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--t);font:18px/1.5 ui-monospace,Menlo,Consolas,monospace}
+#app{max-width:880px;margin:0 auto;padding:16px;min-height:100vh}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+h1{font-size:20px;margin:4px 0;color:var(--g);cursor:pointer;user-select:none;letter-spacing:.05em}
+.chip{border:1px solid var(--line);border-radius:999px;padding:2px 12px;color:var(--a);font-size:15px}
+.hide{display:none!important}
+.term{background:#02060a;border:1px solid var(--g);border-radius:10px;padding:16px;box-shadow:0 0 24px #39ff8830;color:var(--g);min-height:300px}
+.term .l{margin:4px 0;white-space:pre-wrap}.term .r{color:var(--r)}.term .a{color:var(--a)}
+.cur::after{content:"▋";animation:bl 1s steps(2) infinite}@keyframes bl{50%{opacity:0}}
+input[type=text]{font:700 22px ui-monospace,Menlo,monospace;background:#02060a;color:var(--g);border:1px solid var(--g);border-radius:8px;padding:10px;width:min(320px,100%)}
+button{font:700 18px ui-monospace,Menlo,monospace;padding:11px 20px;border-radius:8px;border:1px solid var(--g);background:#0b2a1a;color:var(--g);cursor:pointer}button:disabled{opacity:.35}
+.room{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin:14px 0;padding:14px;border-radius:14px;background:linear-gradient(#101a26,#0a1119);border:1px solid var(--line)}
+.obj{background:var(--pan);border:1px solid var(--line);border-radius:12px;padding:14px 6px;text-align:center;color:var(--t);font-size:15px;position:relative}
+.obj b{display:block;font-size:44px;line-height:1.2;filter:drop-shadow(0 0 8px #ffc85780)}
+.obj.seen{border-color:var(--g)}.obj.seen::after{content:"✓";position:absolute;top:6px;right:10px;color:var(--g)}
+.obj.tre{grid-column:1/-1;border-color:var(--a)}
+.ov{position:fixed;inset:0;background:#000c;display:grid;place-items:center;padding:14px;z-index:20}
+.card{background:#f4e9d2;color:#2b2118;border-radius:6px;padding:18px;width:min(560px,100%);max-height:90vh;overflow:auto;font:19px/1.5 Georgia,serif;box-shadow:0 10px 40px #000;transform:rotate(-.6deg)}
+.card.dk{background:var(--pan);color:var(--t);font:17px/1.5 ui-monospace,Menlo,monospace;border:1px solid var(--a);transform:none}
+.card h2{margin:0 0 8px;font-size:20px}
+.fr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 .2em;line-height:1.15}.fr i{font-style:normal;padding:0 .3em}.fr i:first-child{border-bottom:2px solid currentColor}
+.tab{display:flex;flex-wrap:wrap;gap:8px}.tab span{border:1px solid var(--line);border-radius:8px;padding:3px 10px;background:#0b1119}
+.rz{font-size:70px;text-align:center;position:relative;line-height:1.1}.rz.b1{filter:sepia(.9) brightness(.8)}.rz.b2{filter:sepia(1) brightness(.55) contrast(1.3)}.rz.b3{filter:grayscale(1) brightness(.4)}
+.temp{height:14px;border-radius:7px;background:#1a2733;overflow:hidden;margin:6px 0}.temp i{display:block;height:100%;width:20%;background:linear-gradient(90deg,var(--g),var(--a),var(--r));transition:width 1s}
+#msg{min-height:3em;color:var(--r)}
+@keyframes gl{0%,100%{transform:none;text-shadow:none}20%{transform:translate(-8px,2px) skewX(6deg);text-shadow:3px 0 #f0f,-3px 0 #0ff}40%{transform:translate(8px,-2px) skewX(-6deg)}60%{transform:translate(-5px,0);text-shadow:-3px 0 #f0f,3px 0 #0ff}80%{transform:translate(5px,2px)}}
+@keyframes al{50%{background:#4a0a14}}
+body.gl #app{animation:gl .5s 3}body.al{animation:al .7s infinite}
+body.gl,body.al{pointer-events:none}
+.sheet{position:relative;margin:10px auto;width:240px;height:180px;background:#f4e9d2;color:#2b2118;border-radius:4px;padding:10px;font:15px Georgia,serif;overflow:hidden}.sheet .ln{height:8px;background:#cdbd9f;margin:12px 0;border-radius:4px}.fire{position:absolute;inset:0}.fl{position:absolute;left:0;right:0;text-align:center;font-size:30px;bottom:-4%}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:50;background:repeating-linear-gradient(0deg,#0000 0 2px,#0000002e 3px)}
+@keyframes fk{0%,90%,100%{opacity:1}92%{opacity:.15}94%{opacity:.9}96%{opacity:.05}}
+@keyframes jt{0%,100%{transform:none}30%{transform:translateX(-4px)}60%{transform:translateX(5px) skewX(3deg)}}
+@keyframes bar{from{top:-5px}to{top:100%}}
+.term .l{animation:fk 4s infinite}
+h1.gt,.term.gt{text-shadow:3px 0 #f0f,-3px 0 #0ff;transform:translateX(3px)}
+.bar{position:fixed;left:0;right:0;height:5px;background:#39ff8844;z-index:49;pointer-events:none;animation:bar 5s linear infinite}
+#snd{position:fixed;right:10px;bottom:10px;z-index:60;padding:6px 12px;font-size:20px}
+.big{font-size:54px;text-align:center}
+</style></head><body>
+<button id="snd" class="hide">🔊</button><div id="app">
+<div class="top"><h1 id="h">▌PIZZERIA BELLA FRAKTION</h1><span class="chip hide" id="clock"></span></div>
+
+<div id="intro"><div class="term" id="term"><button id="tap">▶ Verbindung starten (Ton an)</button></div>
+ <p id="ask" class="hide"><span style="color:var(--g)">&gt; Wählt euer Team:</span><br><span id="teams"></span></p></div>
+
+<div id="main" class="hide">
+ <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px"><span class="chip" id="found"></span><span class="chip">Versuche: <b id="left">3</b></span></div>
+ <p style="color:var(--m);margin:8px 0">Die Küche ist verriegelt. Untersucht alles, was R4BATT zurückgelassen hat. Tippt auf die Gegenstände!</p>
+ <div class="room" id="room"></div>
+</div>
+
+<div id="lock" class="hide"><div class="big">🌫️🪦</div><h2 style="color:var(--r)">Das Rezept ist zu Asche zerfallen!</h2><p>Alle 3 Versuche sind verbraucht. R4BATT lacht. Holt euren Lehrer: Gemeinsam findet ihr den Rechenfehler und rettet die nächste Pizza!</p></div>
+
+<div id="win" class="hide"><div class="big">🎉📜✨</div><h2 id="wt" style="color:var(--g)"></h2><p>Der Tresor springt auf. Das Geheimrezept ist gerettet!</p><div class="card" id="rec"></div><p class="chip" id="ws"></p><p>R4BATT: „Nein … mein schöner Plan!“<br><br>Geht leise zu eurem Lehrer und flüstert ihm den Namen der Pizza zu. Verratet es keinem anderen Team!</p></div>
+</div>
+<div class="ov hide" id="ov"><div class="card" id="cd"></div></div>
+<script>
+const WORDS=['BACKEN','OLIVEN','SALAMI','RUCOLA'],MAX=3,KEY='tresor-v3';
+const fr=(n,d)=>`<span class="fr"><i>${n}</i><i>${d}</i></span>`;
+const OBJ=[
+ ['🖥️','Monitor',`Auf dem Monitor blinkt eine Nachricht:<br><i>„Zuerst addiert ihr: ${fr(3,4)} + ${fr(1,6)}“</i>`],
+ ['🧾','Kassenbon',`Ein zerknitterter Kassenbon. Hinten steht:<br><i>Erweitere ${fr(1,4)} auf Achtel und subtrahiere dann: ${fr(7,8)} − ${fr(1,4)}</i>`],
+ ['🍅','Tomatenkiste',`Zwischen den Tomaten klemmt ein Zettel:<br><i>Kürze vollständig: ${fr(18,24)}</i>`],
+ ['📖','Kochbuch',`Eine Seite ist eingerissen:<br><i>Erweitere beide auf Sechstel und addiere: ${fr(1,2)} + ${fr(1,3)}</i>`],
+ ['🧊','Kühlschrank',`Ein Magnet hält einen Zettel:<br><i>Von einer ganzen Pizza werden ${fr(1,8)} gegessen. Wie viel bleibt? 1 − ${fr(1,8)}</i>`],
+ ['🔥','Pizzaofen',`In die Ofentür ist etwas eingeritzt:<br><i>Kürze vollständig: ${fr(40,60)}</i>`]
+];
+const TRUE=[[11,12],[5,8],[3,4],[5,6],[7,8],[2,3]],DEC=[[2,5],[3,8],[6,11],[1,3],[7,12],[3,5]],DL=['SRNLDB','KBTMPG','NDLRKE','MBSTGK'];
+const tafel=i=>TRUE.map(([n,d],k)=>[n,d,WORDS[i][k]]).concat(DEC.map(([n,d],k)=>[n,d,DL[i][k]])).sort((a,b)=>(a[0]*7+a[1]*3+i)%13-(b[0]*7+b[1]*3+i)%13);
+const NOTE=`<p>Mit dem 1. Ergebnis findet ihr den 1. Buchstaben, mit dem 2. Ergebnis den 2. Buchstaben, und so weiter. Der Tresor sagt euch nicht, ob ihr richtig gerechnet habt!</p><p style="color:var(--m)"><b>Merkzettel</b><br>Erweitern: Zähler und Nenner mal dieselbe Zahl.<br>Kürzen: Zähler und Nenner durch dieselbe Zahl teilen, bis es nicht mehr geht.<br>Plus/Minus: erst gleiche Nenner, dann nur die Zähler rechnen. Nenner werden nie addiert.</p>`;
+let st={name:'',t0:0,fails:0,done:false,time:0,seen:[]},clicks=0;
+try{Object.assign(st,JSON.parse(localStorage.getItem(KEY)||'{}'))}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}};
+const $=s=>document.querySelector(s),show=(s,on)=>$(s).classList.toggle('hide',!on);
+const fmt=s=>String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
+function room(){
+  $('#room').innerHTML=OBJ.map((o,i)=>`<button class="obj${st.seen.includes(i)?' seen':''}" data-i="${i}"><b>${o[0]}</b>${o[1]}</button>`).join('')+`<button class="obj" data-i="t"><b>🗝️</b>Geheimtafel</button><button class="obj tre" data-i="p"><b>🔐</b>Der Tresor</button>`;
+  $('#found').textContent='Hinweise gefunden: '+st.seen.length+' / 6';$('#left').textContent=Math.max(0,MAX-st.fails);
+}
+$('#room').onclick=e=>{const b=e.target.closest('.obj');if(!b)return;const i=b.dataset.i;
+  if(i==='t')return card(`<h2>🗝️ Geheimtafel</h2>${NOTE}<div class="tab">${tafel(st.team||0).map(([n,d,l])=>`<span>${fr(n,d)} = ${l}</span>`).join('')}</div>`,1);
+  if(i==='p')return tresor();
+  const n=+i;if(!st.seen.includes(n)){st.seen.push(n);save()}room();
+  card(`<h2>Hinweis ${n+1}: ${OBJ[n][1]}</h2>${OBJ[n][2]}<p style="color:#8a7a66;font-size:16px">Schreibt die Aufgabe auf und rechnet auf eurem Blatt. Das Ergebnis ist der ${n+1}. Buchstabe.</p>`)};
+function card(h,dk){$('#cd').className='card'+(dk?' dk':'');$('#cd').innerHTML=h+'<p><button onclick="closeCard()">Schließen</button></p>';show('#ov',1)}
+function closeCard(){show('#ov',0)}
+const MSG=['R4BATT: „Hihi, falsch! Der Ofen wird heiß, das Rezept raucht schon …“','R4BATT: „ALARM! Das Rezept brennt! Noch ein Versuch, dann ist es Asche!“'];
+function tresor(){
+  const f=st.fails,cls=f?' b'+f:'',em=['📜','📜💨','🔥📜🔥'][f]||'📜';
+  card(`<h2>🔐 Der Tresor</h2><div class="rz${cls}">${em}</div>
+  <p>Ofen-Temperatur:</p><div class="temp"><i style="width:${20+f*40}%"></i></div>
+  <p>⚠️ Ihr habt nur <b>${MAX-f} Versuche</b>! Seid ihr sicher? Dann gebt das Lösungswort ein. Wenn nicht, geht zurück und rechnet noch einmal nach!</p>
+  <p><label><input type="checkbox" id="sure"> Wir haben alles zusammen nachgerechnet.</label></p>
+  <p><input type="text" id="pw" maxlength="6" placeholder="······" autocapitalize="characters" autocomplete="off" style="letter-spacing:.3em;text-align:center"></p>
+  <p><button id="open" disabled>Tresor öffnen</button> <button onclick="closeCard()">Zurück</button></p><div id="msg">${MSG[f-1]||''}</div>`,1);
+  const upd=()=>$('#open').disabled=!($('#sure').checked&&$('#pw').value.trim());
+  $('#sure').onchange=upd;$('#pw').oninput=upd;
+  $('#open').onclick=()=>{const w=$('#pw').value.trim().toUpperCase();
+    if(w===WORDS[st.team||0]){sfx.win();st.done=true;st.time=Math.floor((Date.now()-st.t0)/1000);save();closeCard();view();return}
+    st.fails++;save();closeCard();room();
+    sim();
+    };
+}
+function burn(el,fl,a,b,ms,done){const t0=performance.now();(function f(t){const k=Math.min(1,(t-t0)/ms),p=a+(b-a)*k;el.style.background=`linear-gradient(0deg,#1b1b1b 0%,#1b1b1b ${p}%,#ff5a00 ${p+5}%,#ffd23a ${p+8}%,transparent ${p+12}%)`;fl.style.bottom=(p-4)+'%';k<1?requestAnimationFrame(f):done&&done()})(t0)}
+function sim(){const f=st.fails,P=[0,35,70,105];
+  card(`<h2>🔥 R4BATT zündet den Ofen an!</h2><div class="sheet"><b>📜 Geheimrezept</b><div class="ln"></div><div class="ln"></div><div class="ln"></div><div class="fire"></div><div class="fl">🔥🔥🔥</div></div><p id="sm" style="color:var(--r)">Das Rezept fängt Feuer …</p>`,1);
+  $('#cd').lastElementChild.remove();document.body.classList.add('al');sfx.glitch();
+  burn($('.fire'),$('.fl'),P[f-1],P[f],3200,()=>{if(f>=MAX)sfx.lose();document.body.classList.remove('al');$('#sm').textContent=f<MAX?MSG[f-1]:'Das Geheimrezept ist zu Asche zerfallen …';
+    const b=document.createElement('button');b.textContent=f<MAX?'Weiter':'Ach nein …';b.onclick=()=>{closeCard();f<MAX?tresor():view()};$('#cd').appendChild(b)})}
+function view(){const s=st.t0>0,k=st.fails>=MAX;
+  show('#intro',!s);show('#main',s&&!st.done&&!k);show('#lock',s&&!st.done&&k);show('#win',st.done);show('#clock',s);
+  if(s)room();if(st.done){$('#rec').innerHTML=rec(st.team||0);$('#wt').textContent='Geschafft, '+(st.name||'Team')+'!';$('#ws').textContent='⏱ '+fmt(st.time)+' · Versuche: '+(st.fails+1)}}
+setInterval(()=>{if(st.t0&&!st.done)$('#clock').textContent='⏱ '+fmt(Math.floor((Date.now()-st.t0)/1000))},500);
+const L=[['> Verbindung zur Küche wird aufgebaut ...',''],['> Rezeptdatenbank: ÜBERNOMMEN',''],['> Pizzaofen: ÜBERNOMMEN','a'],['> Eingehende Nachricht von R4BATT:',''],['„Ich habe das Geheimrezept im Tresor eingesperrt. Nur das richtige Lösungswort öffnet ihn. Habt ihr dreimal das falsche Wort eingegeben, verbrennt das Rezept. Für immer.“','r'],['> Küche verriegelt. Viel Glück, Detektive.','a']];
+const gLines=n=>{for(let i=0;i<n;i++){const e=document.createElement('div'),y=Math.random()*100,c=['#39ff88','#0ff','#f0f'][i%3];e.style.cssText=`position:fixed;left:0;right:0;top:${y}%;height:${1+Math.random()*3}px;background:${c};opacity:.8;z-index:55;pointer-events:none;box-shadow:0 0 8px ${c}`;document.body.appendChild(e);let k=0;const t=setInterval(()=>{k++;e.style.left=(Math.random()*40-20)+'%';e.style.right=(Math.random()*40-20)+'%';e.style.top=(y+Math.random()*6-3)+'%';e.style.opacity=Math.random()<.3?.1:.8;if(k>8){clearInterval(t);e.remove()}},70)}};
+const sfx=(()=>{let c,mg,on=true,dn=false,pg,run=false,tmr,beat=0,nt=0,t0=0,bump=0;
+const rn=(a,b)=>a+Math.random()*(b-a);
+const init=()=>{if(c)return c;const A=window.AudioContext||window.webkitAudioContext;if(!A)return null;c=new A();mg=c.createGain();mg.gain.value=.9;mg.connect(c.destination);return c};
+const tone=(f,d,v,type,t,f2,lp)=>{if(!c||!on)return;const o=c.createOscillator(),g=c.createGain();let n=o;o.type=type||'sine';o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+d);if(lp){n=c.createBiquadFilter();n.type='lowpass';n.frequency.value=lp;o.connect(n)}n.connect(g);g.connect(mg);g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.02);g.gain.exponentialRampToValueAtTime(0.0001,t+d);o.start(t);o.stop(t+d+.05)};
+const noise=(d,v,t)=>{if(!c||!on)return;const n=c.sampleRate*d|0,b=c.createBuffer(1,n,c.sampleRate),x=b.getChannelData(0);for(let i=0;i<n;i++)x[i]=Math.random()*2-1;const s=c.createBufferSource(),g=c.createGain(),h=c.createBiquadFilter();h.type='bandpass';h.frequency.value=1800;s.buffer=b;s.connect(h);h.connect(g);g.connect(mg);g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(0.0001,t+d);s.start(t)};
+const bpm=()=>Math.min(150,78+(Date.now()-t0)/1000/900*62+bump);
+const N=[110,110,131,110,165,110,131,123];
+const sched=()=>{while(nt<c.currentTime+.2){const b=beat%8,s=30/bpm();if(on){if(b%4===0)tone(75,.35,.2,'sine',nt,38);if(b%2===0)tone(b===0?2400:1800,.03,b===0?.05:.03,'triangle',nt);tone(N[b],s*.9,.04,'sawtooth',nt,0,520)}nt+=s;beat++}};
+return{start(){const x=init();if(!x)return;x.resume&&x.resume();if(!pg){pg=c.createGain();pg.gain.value=.05;pg.connect(mg);const lp=c.createBiquadFilter();lp.type='lowpass';lp.frequency.value=220;lp.connect(pg);[55,82.4].forEach(f=>{const o=c.createOscillator();o.type='triangle';o.frequency.value=f;o.connect(lp);o.start()})}},
+ intro(){if(!c||!on)return 0;const T=c.currentTime+.1,P=[220,261.6,329.6,261.6,440,329.6,261.6,246.9];
+ for(let i=0;i<64;i++)tone(P[i%8]*Math.pow(1.0595,Math.floor(i/16)*2),.11,.02+i*.0008,'sawtooth',T+i*.125,0,400+i*45);
+ for(let k=0;k<16;k++)tone(55,.3,.18,'sine',T+k*.5,32);
+ for(let i=0;i<16;i++)noise(.1,.03+i*.008,T+6+i*.125);
+ tone(70,1.4,.38,'sine',T+8,25);noise(.6,.25,T+8);return 8.2},
+ race(t,dl){if(!c||run)return;run=true;t0=t||Date.now();nt=c.currentTime+.1+(dl||0);beat=0;tmr=setInterval(sched,40)},
+ crack(){if(c&&on)tone(700,.04,.03,'sine',c.currentTime)},
+ glitch(){if(!c)return;bump+=12;const t=c.currentTime;tone(60,.9,.25,'sine',t,30);for(let i=0;i<5;i++)noise(.07,.1,t+i*.1)},
+ stop(){run=false;dn=true;clearInterval(tmr);if(pg)pg.gain.value=0},
+ win(){this.stop();if(!c||!on)return;const t=c.currentTime;[523,659,784,1047,1319].forEach((f,i)=>tone(f,.5,.12,'triangle',t+i*.14));tone(1568,1.2,.07,'sine',t+.8)},
+ lose(){this.stop();if(!c||!on)return;const t=c.currentTime;[392,370,349,330].forEach((f,i)=>tone(f,.8,.12,'sawtooth',t+i*.5,f*.92,600))},
+ toggle(){on=!on;if(pg)pg.gain.value=on&&!dn?.05:0;return on}}})();
+let li=0;function next(){if(st.t0>0)return;const t=$('#term');if(li>=L.length){$('#ask').classList.remove('hide');return}
+  const d=document.createElement('div');d.className='l '+L[li][1];d.textContent=L[li][0];d.style.animationDelay=(-Math.random()*4)+'s';t.appendChild(d);sfx.crack();li++;if(li===2||li===4||li===6)gLines(4);setTimeout(next,900)}
+document.addEventListener('click',()=>{sfx.start();if(st.t0>0&&!st.done&&st.fails<MAX)sfx.race(st.t0);$('#snd').classList.remove('hide')},{once:true});
+$('#tap').onclick=function(){this.remove();gLines(6);next()};
+$('#snd').onclick=e=>{e.stopPropagation();$('#snd').textContent=sfx.toggle()?'🔊':'🔇'};
+const gi=setInterval(()=>{if(st.t0>0){clearInterval(gi);return}const e=Math.random()<.5?$('#h'):$('#term');e.classList.add('gt');setTimeout(()=>e.classList.remove('gt'),150)},3000);
+const BEL=[['Margherita','400 g passierte Tomaten, 250 g Mozzarella, frisches Basilikum'],['Funghi','400 g passierte Tomaten, 250 g Mozzarella, 300 g Champignons, Petersilie'],['Hawaii','400 g passierte Tomaten, 250 g Mozzarella, 200 g Kochschinken, 1 Dose Ananas'],['Quattro Formaggi','200 g Mozzarella, 100 g Gorgonzola, 100 g Parmesan, 100 g Emmentaler']];
+const rec=i=>`<h2>🍕 Pizza ${BEL[i][0]}</h2><p><b>Teig:</b> 500 g Mehl, ${fr(1,2)} Würfel Hefe, ${fr(1,4)} l lauwarmes Wasser, 1 TL Salz, 2 EL Olivenöl. Den Teig ${fr(1,2)} Stunde gehen lassen.</p><p><b>Belag:</b> ${BEL[i][1]}</p><p><b>Backen:</b> ${fr(1,4)} Stunde bei 250 °C.</p>`;
+const TEAMS=[['🍅','Team Tomate'],['🌿','Team Basilikum'],['🧀','Team Käse'],['🌶️','Team Peperoni']];
+$('#teams').innerHTML=TEAMS.map((t,i)=>`<button data-i="${i}" style="margin:6px 6px 0 0">${t[0]} ${t[1]}</button>`).join('');
+$('#teams').onclick=e=>{const b=e.target.closest('button');if(!b)return;const i=+b.dataset.i;st.team=i;st.name=TEAMS[i][1];st.t0=Date.now();st.fails=0;st.done=false;st.seen=[];save();const dl=sfx.intro();sfx.race(st.t0,dl);view()};
+let ct;$('#h').onclick=()=>{clearTimeout(ct);ct=setTimeout(()=>clicks=0,3000);if(++clicks>=5){clicks=0;if(st.t0>0&&!st.done&&st.fails>=MAX)st.fails=0;else st={name:'',t0:0,fails:0,done:false,time:0,seen:[],team:0};save();location.reload()}};
+view();
+</script></body></html>
